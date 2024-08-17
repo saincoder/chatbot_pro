@@ -91,9 +91,17 @@ model = gen_ai.GenerativeModel('gemini-pro')
 def translate_role_for_streamlit(user_role):
     return "assistant" if user_role == "model" else user_role
 
+# Function to get the first three words of a text
+def get_first_three_words(text):
+    return ' '.join(text.split()[:3])
+
 # Initialize chat session in Streamlit if not already present
 if "chat_session" not in st.session_state:
     st.session_state.chat_session = model.start_chat(history=[])
+
+# Initialize lists to store excerpts
+prompts_excerpts = []
+responses_excerpts = []
 
 # Display the chatbot's title and developer name on the page
 st.title("Streamly Streamlit Assistant")
@@ -103,8 +111,10 @@ for message in st.session_state.chat_session.history:
     role = translate_role_for_streamlit(message.role)
     if role == "user":
         st.chat_message("user").markdown(message.parts[0].text)
+        prompts_excerpts.append(get_first_three_words(message.parts[0].text))
     else:
         st.chat_message("assistant").markdown(message.parts[0].text)
+        responses_excerpts.append(get_first_three_words(message.parts[0].text))
 
 # Input field for the user's message
 user_prompt = st.chat_input("Enter your prompt here..!")
@@ -118,6 +128,10 @@ if user_prompt:
     # Display Gemini-Pro's response
     st.chat_message("assistant").markdown(gemini_response.text)
 
+    # Store the excerpts of the new prompt and response
+    prompts_excerpts.append(get_first_three_words(user_prompt))
+    responses_excerpts.append(get_first_three_words(gemini_response.text))
+
 # Function to convert chat history to a downloadable text file
 def get_chat_history():
     chat_history = ""
@@ -129,7 +143,18 @@ def get_chat_history():
             chat_history += f"Assistant: {message.parts[0].text}\n"
     return chat_history
 
-# Directly use st.download_button without st.button
+# Check if chat history is empty and show appropriate message or download button in the sidebar
 chat_history = get_chat_history()
-buffer = io.BytesIO(chat_history.encode('utf-8'))  # Convert to bytes
-st.download_button(label="Download Chat History", data=buffer, file_name="chat_history.txt", mime="text/plain")
+
+with st.sidebar:
+    if not chat_history.strip():
+        st.write("You don't have any chat yet.")
+    else:
+        buffer = io.BytesIO(chat_history.encode('utf-8'))  # Convert to bytes
+        st.download_button(label="Download Chat History", data=buffer, file_name="chat_history.txt", mime="text/plain")
+
+    # Display excerpts
+    st.subheader("Recent Prompts & Responses")
+    for i in range(len(prompts_excerpts)):
+        st.write(f"**Prompt:** {prompts_excerpts[i]}")
+        st.write(f"**Response:** {responses_excerpts[i]}")
