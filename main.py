@@ -20,8 +20,9 @@ st.markdown("""
     <style>
     /* Overall page styling */
     body {
-        background-color: #121212;
+        background: linear-gradient(to right, #2c3e50, #bdc3c7);
         color: #FFFFFF;
+        font-family: 'Arial', sans-serif;
     }
     
     /* Chatbot title styling */
@@ -30,6 +31,7 @@ st.markdown("""
         color: #FFFFFF;
         text-align: center;
         margin-top: 20px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
     }
 
     /* Developer name styling */
@@ -38,6 +40,7 @@ st.markdown("""
         color: #888888;
         text-align: center;
         margin-bottom: 20px;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
     }
 
     /* Chat message styling */
@@ -48,6 +51,8 @@ st.markdown("""
         border-radius: 10px;
         margin: 10px 0;
         max-width: 70%;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        transition: background-color 0.3s ease;
     }
     .stMarkdown p.user-message {
         background-color: #202020;
@@ -79,6 +84,20 @@ st.markdown("""
         background-color: #202020;
         color: #FFFFFF;
     }
+
+    /* Button styling */
+    .stDownloadButton {
+        background-color: #1E1E1E;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .stDownloadButton:hover {
+        background-color: #333333;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -104,8 +123,8 @@ prompts_excerpts = []
 responses_excerpts = []
 
 # Display the chatbot's title and developer name on the page
-st.title("Streamly Streamlit Assistant")
-
+st.title("NexBot Assistant")
+st.text('Developed by Shahid Hussain')
 # Display the chat history
 for message in st.session_state.chat_session.history:
     role = translate_role_for_streamlit(message.role)
@@ -151,10 +170,10 @@ with st.sidebar:
         st.write("You don't have any chat yet.")
     else:
         buffer = io.BytesIO(chat_history.encode('utf-8'))  # Convert to bytes
-        st.download_button(label="Download Chat History", data=buffer, file_name="chat_history.txt", mime="text/plain")
+        st.download_button(label="Download Chat History", data=buffer, file_name="chat_history.txt", mime="text/plain", key="download_button")
 
     # Display excerpts
     st.subheader("Recent Prompts & Responses")
     for i in range(len(prompts_excerpts)):
-        st.write(f"**Prompt:** {prompts_excerpts[i]}")
-        st.write(f"**Response:** {responses_excerpts[i]}")
+        st.write(f"**User:** {prompts_excerpts[i]}")
+        st.write(f"**Bot:** {responses_excerpts[i]}")
