@@ -2,6 +2,7 @@ import os
 import streamlit as st
 from dotenv import load_dotenv
 import google.generativeai as gen_ai
+import io
 
 # Load environment variables
 load_dotenv()
@@ -116,3 +117,19 @@ if user_prompt:
 
     # Display Gemini-Pro's response
     st.chat_message("assistant").markdown(gemini_response.text)
+
+# Function to convert chat history to a downloadable text file
+def get_chat_history():
+    chat_history = ""
+    for message in st.session_state.chat_session.history:
+        role = translate_role_for_streamlit(message.role)
+        if role == "user":
+            chat_history += f"User: {message.parts[0].text}\n"
+        else:
+            chat_history += f"Assistant: {message.parts[0].text}\n"
+    return chat_history
+
+# Directly use st.download_button without st.button
+chat_history = get_chat_history()
+buffer = io.BytesIO(chat_history.encode('utf-8'))  # Convert to bytes
+st.download_button(label="Download Chat History", data=buffer, file_name="chat_history.txt", mime="text/plain")
